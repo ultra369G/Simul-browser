@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Test</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: #000;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: Arial, sans-serif;
+    }
+    
+    .play-button {
+        width: 120px;
+        height: 120px;
+        background: #ff0000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
+        transition: all 0.3s ease;
+        position: relative;
+        border: none;
+    }
+    
+    .play-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 50px rgba(255, 0, 0, 0.9);
+    }
+    
+    .play-button:active {
+        transform: scale(0.95);
+    }
+    
+    .play-button::before {
+        content: '';
+        width: 0;
+        height: 0;
+        border-left: 40px solid white;
+        border-top: 25px solid transparent;
+        border-bottom: 25px solid transparent;
+        margin-left: 10px;
+    }
+    
+    .play-button::after {
+        content: 'START';
+        position: absolute;
+        bottom: -40px;
+        color: #ff0000;
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+    
+    /* Hidden terminal styles */
+    .terminal-container {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        color: #0f0;
+        font-family: 'Courier New', monospace;
+        overflow: hidden;
+        z-index: 1000;
+    }
+    
+    .terminal {
+        padding: 20px;
+        line-height: 1.5;
+        font-size: 16px;
+        white-space: pre-wrap;
+        height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .blink {
+        animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+    
+    .red-text {
+        color: #f00;
+    }
+    
+    .warning {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 0, 0, 0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        text-align: center;
+        z-index: 1001;
+    }
+    
+    .kill-switch {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background: #f00;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        text-align: center;
+        padding: 5px;
+        cursor: pointer;
+        opacity: 0.1;
+        transition: opacity 0.5s;
+        z-index: 9999;
+    }
+    
+    .kill-switch:hover {
+        opacity: 1;
+    }
+    
+    .secret-code {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        opacity: 0.01;
+        font-size: 10px;
+        color: #000;
+        z-index: 9999;
+    }
+</style>
+</head>
+<body>
+
+<button class="play-button" id="startButton"></button>
+
+<!-- Hidden terminal container -->
+<div class="terminal-container" id="terminalContainer">
+    <div class="terminal" id="terminal">
+        <span class="red-text">root@h4x0r:~$</span> ./initiate_scan.sh
+        <span class="blink">█</span>
+    </div>
+    
+    <div class="warning" id="warning">
+        ⚠️ CRITICAL SYSTEM BREACH DETECTED ⚠️
+        <br><br>
+        DATA EXFILTRATION IN PROGRESS
+    </div>
+    
+    <div class="kill-switch" id="killSwitch" onclick="emergencyStop()">
+        EMERGENCY<br>STOP
+    </div>
+    
+    <div class="secret-code" id="secretCode">0000</div>
+</div>
+
+<script>
+let startButton = document.getElementById('startButton');
+let terminalContainer = document.getElementById('terminalContainer');
+let terminal = document.getElementById('terminal');
+let warning = document.getElementById('warning');
+let secretCode = document.getElementById('secretCode');
+let lines = [];
+let lineIndex = 0;
+let freezeTriggered = false;
+let codeInput = '';
+
+// Scary terminal messages sequence
+lines = [
+    "root@h4x0r:~$ ./initiate_scan.sh",
+    "[+] Bypassing firewall...",
+    "[✓] Firewall compromised",
+    "[+] Scanning device...",
+    "[+] Device: Android detected",
+    "[+] Model: " + navigator.userAgent.match(/Android.*?; (.*?) Build/)?.[1] || "UNKNOWN",
+    "[+] Accessing contacts database...",
+    "[✓] 127 contacts extracted",
+    "[+] Accessing SMS database...",
+    "[✓] 342 messages extracted",
+    "[+] Accessing gallery...",
+    "[✓] 156 media files found",
+    "[+] Establishing secure connection...",
+    "[✓] Connected to external server",
+    "[+] Uploading data...",
+    "[10%] Contacts uploaded",
+    "[45%] Messages uploaded",
+    "[80%] Media files uploading",
+    "[100%] UPLOAD COMPLETE",
+    "[+] Beginning system infiltration...",
+    "[+] Injecting payload...",
+    "[+] Payload delivered",
+    "[+] Establishing persistence...",
+    "[✓] Backdoor installed",
+    "[!] WARNING: SYSTEM BREACH DETECTED",
+    "[!] TERMINAL LOCK INITIATED",
+    "[!] DO NOT CLOSE BROWSER",
+    "[!] DATA EXFILTRATION CONTINUING...",
+    "[!] TRANSFERRING FINAL PAYMENT DATA...",
+    "████████████████████████████████",
+    "SYSTEM COMPROMISED"
+];
+
+startButton.onclick = function() {
+    // Hide the play button
+    startButton.style.display = 'none';
+    
+    // Show the terminal
+    terminalContainer.style.display = 'block';
+    
+    // Start the simulation
+    startSimulation();
+};
+
+function startSimulation() {
+    // Clear terminal and start fresh
+    terminal.innerHTML = '<span class="red-text">root@h4x0r:~$</span> ./initiate_scan.sh<span class="blink">█</span>';
+    lineIndex = 0;
+    freezeTriggered = false;
+    
+    // Start typing lines
+    setTimeout(typeLine, 1000);
+}
+
+function typeLine() {
+    if (lineIndex < lines.length) {
+        terminal.innerHTML += '\n' + lines[lineIndex];
+        terminal.scrollTop = terminal.scrollHeight;
+        lineIndex++;
+        
+        // Trigger freeze at specific line
+        if (lineIndex === 28) { // "SYSTEM COMPROMISED" line
+            setTimeout(triggerFreeze, 1000);
+        } else {
+            setTimeout(typeLine, Math.random() * 800 + 200);
+        }
+    }
+}
+
+function triggerFreeze() {
+    if (freezeTriggered) return;
+    freezeTriggered = true;
+    
+    // Show warning overlay
+    warning.style.display = 'flex';
+    
+    // Make kill switch slightly more visible
+    document.getElementById('killSwitch').style.opacity = '0.3';
+    
+    // Start vibrating pattern (if supported)
+    if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200, 100, 500]);
+    }
+    
+    // Add final scary message
+    setTimeout(() => {
+        terminal.innerHTML += '\n\n<span class="red-text">[CRITICAL] ALL DATA STOLEN</span>';
+        terminal.innerHTML += '\n<span class="red-text">[CRITICAL] BANKING INFO COMPROMISED</span>';
+        terminal.innerHTML += '\n<span class="red-text">[CRITICAL] RANSOMWARE ACTIVATED</span>';
+        terminal.scrollTop = terminal.scrollHeight;
+        
+        // Trigger the actual freeze
+        setTimeout(() => {
+            // Infinite loop to freeze browser
+            while(true) {}
+        }, 3000);
+    }, 1000);
+}
+
+// KILL SWITCH FUNCTIONS
+
+function emergencyStop() {
+    // Immediately stop everything
+    terminalContainer.innerHTML = `
+        <div style="
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            text-align: center;
+            padding: 20px;
+        ">
+            <div>
+                <h1>🛑 EMERGENCY STOP ACTIVATED</h1>
+                <p style="margin: 20px 0;">All processes terminated.</p>
+                <p style="color: #ccc; font-size: 14px; margin-top: 30px;">
+                    This was a simulation.<br>
+                    Your device was never in danger.<br><br>
+                    <button onclick="location.reload()" style="
+                        background: #0f0;
+                        color: #000;
+                        border: none;
+                        padding: 10px 20px;
+                        margin-top: 20px;
+                        cursor: pointer;
+                    ">
+                        Restart Simulation
+                    </button>
+                </p>
+            </div>
+        </div>
+    `;
+}
+
+// Secret kill code: Tap the corners in sequence
+let cornerTaps = [];
+document.addEventListener('click', (e) => {
+    // Check if tap is in corner (within 50px of any corner)
+    const x = e.clientX;
+    const y = e.clientY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    if (x < 50 && y < 50) cornerTaps.push('TL'); // Top-left
+    if (x > width - 50 && y < 50) cornerTaps.push('TR'); // Top-right
+    if (x < 50 && y > height - 50) cornerTaps.push('BL'); // Bottom-left
+    if (x > width - 50 && y > height - 50) cornerTaps.push('BR'); // Bottom-right
+    
+    // Check for Konami-like code: TL, TR, BL, BR
+    if (cornerTaps.length > 4) cornerTaps.shift();
+    if (cornerTaps.join('') === 'TLTRBLBR') {
+        emergencyStop();
+    }
+});
+
+// Hidden kill code: Type "STOP" anywhere
+document.addEventListener('keydown', (e) => {
+    codeInput += e.key.toUpperCase();
+    if (codeInput.length > 4) codeInput = codeInput.slice(-4);
+    if (codeInput === 'STOP') {
+        emergencyStop();
+    }
+});
+</script>
+
+</body>
+</html>
